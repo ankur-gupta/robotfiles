@@ -35,7 +35,14 @@ If there is a conflict between the above three sources, the project-specific Git
 ### Noted Exceptions [EXCEPTIONS]
 None recorded yet.
 
-### Canonical LLM Commit Example [CANONICAL-LLM-COMMIT-EXAMPLE]
+### Tenet 1: Use Complete LLM Commit Message Structure [COMMIT-LLM-STRUCTURE]
+LLM-authored commits must use a complete message structure:
+- Start the subject with `llm/<agent>:`, where `<agent>` is a short lowercase identifier for the model or tool (e.g. `codex`, `claude`).
+- Describe the user-visible or repo-visible change in the subject and body, not merely that an LLM made a change.
+- Include stable machine-parseable trailers: `Agent:`, `Agent-Authored: true`, and `Change-Origin: llm`.
+- Add a concise `Scope:` trailer when it helps humans or tools identify the main subsystem, package, or path touched by the commit.
+
+Good:
 ```text
 llm/codex: add Google Python style guide local fallback
 
@@ -48,67 +55,34 @@ Agent-Authored: true
 Change-Origin: llm
 Scope: tenets/languages/python
 ```
-
-### Tenet 1: Prefix LLM Commit Subjects [COMMIT-LLM-PREFIX]
-LLM-authored commit subjects must start with `llm/<agent>:`. For Codex-authored commits, use `llm/codex:` so all LLM commits can be found with a broad `llm/` prefix and Codex commits can be found more narrowly.
-
-Good:
 ```text
-llm/codex: add Google Python style guide local fallback
-```
+llm/claude: generalize commit-prefix tenet to all LLM agents
 
-Bad:
-```text
-codex: add Google Python style guide local fallback
-```
+Update Tenet 1 [COMMIT-LLM-STRUCTURE] and the canonical example so that
+COMMITS.md is agent-agnostic, with Codex and Claude as named examples.
 
-### Tenet 2: Describe The Meaningful Change [COMMIT-SEMANTIC-SUMMARY]
-The subject and body must describe the user-visible or repo-visible change, not merely that an LLM made a change.
-
-Good:
-```text
-llm/codex: add commit-message tenets for LLM authorship
-
-Add a Git commit tenets file that defines searchable LLM subject prefixes,
-machine-readable trailers, and authorship separation rules.
-```
-
-Bad:
-```text
-llm/codex: update files
-
-Made requested changes.
-```
-
-### Tenet 3: Add Machine-Parseable Trailers [COMMIT-MACHINE-TRAILERS]
-LLM-authored commits must include trailers that identify the agent and origin in a stable, machine-parseable form.
-
-Good:
-```text
-Agent: Codex
+Agent: Claude
 Agent-Authored: true
 Change-Origin: llm
-```
-
-Bad:
-```text
-This was done by Codex.
-```
-
-### Tenet 4: Name The Main Scope When Useful [COMMIT-SCOPE-TRAILER]
-Add a concise `Scope:` trailer when it helps humans or tools identify the main subsystem, package, or path touched by the commit.
-
-Good:
-```text
 Scope: tenets/git
 ```
 
 Bad:
 ```text
-Scope: miscellaneous stuff and some docs
+codex: add Google Python style guide local fallback
+
+This was done by Codex.
 ```
 
-### Tenet 5: Separate LLM Authorship From User Authorship [COMMIT-SEPARATE-AUTHORSHIP]
+```text
+llm/codex: update files
+
+Made requested changes.
+
+This was done by Codex.
+```
+
+### Tenet 2: Separate LLM Authorship From User Authorship [COMMIT-SEPARATE-AUTHORSHIP]
 Do not include user-authored or unrelated changes in an LLM-authored commit. Stage only the hunks and files that belong to the LLM-authored change.
 
 Good:
