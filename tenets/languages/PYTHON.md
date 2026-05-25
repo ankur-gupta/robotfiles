@@ -12,7 +12,7 @@ Always try to retrieve the latest Google Python Style Guide from the internet fi
 If there is a conflict between the above three sources, the project-specific Python guide supersedes this [GLOBAL-PYTHON-TENETS] file, which then supersedes the latest available Google Python Style Guide or, when offline, the local snapshot.
 
 ### Finding tenets [FINDING-TENETS]
-- When you see a tenet citation like "Tenet X [STABLE-ID]", give precedence to the stable ID over the number when trying to find the relevant tenent. 
+- When you see a tenet citation like "Tenet X [STABLE-ID]", give precedence to the semantic text of stable ID over the number when trying to find the relevant tenent. Numbering can get messed up.
 - When explaining a change, cite the relevant tenet only when it clarifies the reasoning.
 - Always cite a tenet in this form: "Tenet X [STABLE-ID]". You may cite the tenet in codebase as a comment, other markdown files, or even this file itself.
 
