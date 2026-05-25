@@ -34,40 +34,50 @@ If there is a conflict between the above three sources, the project-specific Pyt
 ### Noted Exceptions [EXCEPTIONS]
 None recorded yet.
 
-### Tenet 1: Prefer Explicit Data Flow `[py-explicit-flow]`
+### Tenet 1: Prefer Explicit Data Flow [PY-EXPLICIT-FLOW]
 
 Pass dependencies and inputs directly instead of hiding them in globals,
 environment lookups, or module-level mutable state.
 
+Good:
+
 ```python
-# Prefer
 def build_report(rows: list[Row], formatter: Formatter) -> str:
     return formatter.render(rows)
+```
 
-# Avoid
+Bad:
+
+```python
 def build_report() -> str:
     return GLOBAL_FORMATTER.render(load_rows_from_global_path())
 ```
 
-### Tenet 2: Keep Functions Focused `[py-focused-functions]`
+### Tenet 2: Keep Functions Focused [PY-FOCUSED-FUNCTIONS]
 
 A function should usually do one job at one level of abstraction. Split work
 when naming the smaller operation makes the code easier to read.
 
+Good:
+
 ```python
-# Prefer
 def active_users(users: Iterable[User]) -> list[User]:
     return [user for user in users if user.is_active]
+```
 
-# Avoid
+Bad:
+
+```python
 def active_users_and_write_csv(users: Iterable[User], path: Path) -> None:
     ...
 ```
 
-### Tenet 3: Use Types To Explain Boundaries `[py-typed-boundaries]`
+### Tenet 3: Use Types To Explain Boundaries [PY-TYPED-BOUNDARIES]
 
 Add type hints at module and function boundaries. Use domain names, dataclasses,
 TypedDict, Protocol, or simple value objects when primitives become ambiguous.
+
+Good:
 
 ```python
 @dataclass(frozen=True)
@@ -80,14 +90,22 @@ def fetch_invoice(invoice_id: str, retry: RetryPolicy) -> Invoice:
     ...
 ```
 
-### Tenet 4: Do Not Mix Business Logic With IO `[py-io-boundary]`
+Bad:
+
+```python
+def fetch_invoice(invoice_id: str, attempts: int, backoff_seconds: float):
+    ...
+```
+
+### Tenet 4: Do Not Mix Business Logic With IO [PY-IO-BOUNDARY]
 
 Keep decisions separate from reading files, making network calls, printing,
 logging, database access, or shell execution. IO wrappers should gather inputs
 and persist outputs; pure functions should decide what should happen.
 
+Good:
+
 ```python
-# Prefer
 def overdue_invoices(invoices: Iterable[Invoice], today: date) -> list[Invoice]:
     return [invoice for invoice in invoices if invoice.due_date < today]
 
@@ -98,29 +116,44 @@ def load_and_send_reminders(path: Path, today: date) -> None:
         send_reminder(invoice)
 ```
 
-### Tenet 5: Handle Errors At The Right Level `[py-error-level]`
+Bad:
+
+```python
+def load_and_send_reminders(path: Path, today: date) -> None:
+    for invoice in read_invoices(path):
+        if invoice.due_date < today:
+            send_reminder(invoice)
+```
+
+### Tenet 5: Handle Errors At The Right Level [PY-ERROR-LEVEL]
 
 Catch exceptions where the code can add context, retry, recover, or choose a
 user-facing response. Do not catch exceptions only to hide them.
 
+Good:
+
 ```python
-# Prefer
 try:
     invoice = parse_invoice(raw_invoice)
 except InvalidInvoice as exc:
     raise ImportError(f"Invalid invoice in {source_path}") from exc
+```
 
-# Avoid
+Bad:
+
+```python
 try:
     invoice = parse_invoice(raw_invoice)
 except Exception:
     return None
 ```
 
-### Tenet 6: Make Tests Describe Behavior `[py-behavior-tests]`
+### Tenet 6: Make Tests Describe Behavior [PY-BEHAVIOR-TESTS]
 
 Test observable behavior and meaningful edge cases. Avoid tests that only copy
 the implementation structure.
+
+Good:
 
 ```python
 def test_overdue_invoices_excludes_invoice_due_today() -> None:
@@ -128,4 +161,11 @@ def test_overdue_invoices_excludes_invoice_due_today() -> None:
     invoices = [Invoice("a", today), Invoice("b", today - timedelta(days=1))]
 
     assert overdue_invoices(invoices, today) == [invoices[1]]
+```
+
+Bad:
+
+```python
+def test_overdue_invoices_uses_less_than_operator() -> None:
+    assert "<" in inspect.getsource(overdue_invoices)
 ```
