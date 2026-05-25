@@ -39,7 +39,7 @@ None recorded yet.
 LLM-authored commits must use a complete message structure:
 - Start the subject with `llm/<agent>:`, where `<agent>` is a short lowercase identifier for the model or tool (e.g. `codex`, `claude`).
 - Describe the user-visible or repo-visible change in the subject and body, not merely that an LLM made a change.
-- Include stable machine-parseable trailers: `Agent:`, `Agent-Authored: true`, and `Change-Origin: llm`.
+- Include stable machine-parseable trailers in one contiguous trailer block with no blank lines between trailer lines: `Agent:`, `Agent-Authored: true`, and `Change-Origin: llm`.
 - Add a concise `Scope:` trailer when it helps humans or tools identify the main subsystem, package, or path touched by the commit.
 
 Good:
@@ -80,6 +80,18 @@ llm/codex: update files
 Made requested changes.
 
 This was done by Codex.
+```
+
+```text
+llm/codex: consolidate LLM commit structure tenet
+
+Merge related commit-message guidance into one structure tenet.
+
+Agent: Codex
+
+Agent-Authored: true
+
+Change-Origin: llm
 ```
 
 ### Tenet 2: Separate LLM Authorship From User Authorship [COMMIT-SEPARATE-AUTHORSHIP]
