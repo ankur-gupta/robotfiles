@@ -9,9 +9,9 @@ This [GLOBAL-PYTHON-TENETS] file is part of a hierarchy
 If there is a conflict between the above three sources, the project-specific Python guide supersedes this [GLOBAL-PYTHON-TENETS] file, which then supersedes the [Google Style Guide](https://google.github.io/styleguide/pyguide.html).
 
 ### Finding tenets [FINDING-TENETS]
-- When you see a tenet citation like "Tenet X ([STABLE-ID])", give precedence to the stable ID over the number when trying to find the relevant tenent. 
+- When you see a tenet citation like "Tenet X [STABLE-ID]", give precedence to the stable ID over the number when trying to find the relevant tenent. 
 - When explaining a change, cite the relevant tenet only when it clarifies the reasoning.
-- Always cite a tenet in this form: "Tenet X ([STABLE-ID])". You may cite the tenet in codebase as a comment, other markdown files, or even this file itself.
+- Always cite a tenet in this form: "Tenet X [STABLE-ID]". You may cite the tenet in codebase as a comment, other markdown files, or even this file itself.
 
 ## Maintaining This File [WRITING-THIS-FILE]
 - Give every referable section a unique, short, stable ID of the form [TENET-ID] placed at the end of the title. The ID should give enough context to the reader (LLM or human) on what the tenet is. There should be no punctuation or underscores in the stable ID but dashes are allowed. 
@@ -27,7 +27,7 @@ If there is a conflict between the above three sources, the project-specific Pyt
 
 ### Fixing numbering issues [FIX-NUMBERING-ISSUES]
 - If you see that the tenet numbering is wrong (skipped numbers), let the human know and then offer to fix them. The human may delay fixing the numbering in some cases when the human expects a skipped number to be replaced later.
-- When you find a "Tenet X ([STABLE-ID])" citation but no Tenet X exists, let the human know, and then offer to fix them.
+- When you find a "Tenet X [STABLE-ID]" citation but no Tenet X exists, let the human know, and then offer to fix them.
 
 
 ## Tenets [TENETS]
