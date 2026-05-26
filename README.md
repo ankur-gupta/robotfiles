@@ -29,14 +29,16 @@ Clone the repository to a known location and point each agent steering file at t
 ```markdown
 # AGENTS.md
 ...
-Follow `$HOME/robotfiles/tenets/languages/PYTHON.md` for Python guidance unless this project gives a more specific rule.
+Follow `$HOME/robotfiles/tenets/languages/PYTHON.md` for Python guidance 
+unless this project gives a more specific rule.
 ...
 ```
 
 ```markdown
 # CLAUDE.md
 ...
-For LLM-authored commits, follow `$HOME/robotfiles/tenets/git/COMMITS.md` unless this repo has a more specific commit guide.
+For LLM-authored commits, follow `$HOME/robotfiles/tenets/git/COMMITS.md` 
+unless this repo has a more specific commit guide.
 ...
 ```
 
