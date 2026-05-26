@@ -1,23 +1,23 @@
-# Global Python Tenets [GLOBAL-PYTHON-TENETS]
-This file defines global Python coding tenets (in [TENETS] section) for LLM coding agents. Project-local instructions may override it when they are more specific.
+# Global Python Tenets [PY-GLOBAL-PYTHON-TENETS]
+This file defines global Python coding tenets (in [PY-TENETS] section) for LLM coding agents. Project-local instructions may override it when they are more specific.
 
-## Using This File [USING-THIS-FILE]
-This [GLOBAL-PYTHON-TENETS] file is part of a hierarchy
+## Using This File [PY-USING-THIS-FILE]
+This [PY-GLOBAL-PYTHON-TENETS] file is part of a hierarchy
   1. Project-specific Python guide (if it exists) 
-  2. This [GLOBAL-PYTHON-TENETS] file
+  2. This [PY-GLOBAL-PYTHON-TENETS] file
   3. Latest available [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html)
 
 Always try to retrieve the latest Google Python Style Guide from the internet first. If internet access is unavailable, use the local snapshot at [google-python-style-guide-2026-05-25.html](references/google-python-style-guide-2026-05-25.html).
 
-If there is a conflict between the above three sources, the project-specific Python guide supersedes this [GLOBAL-PYTHON-TENETS] file, which then supersedes the latest available Google Python Style Guide or, when offline, the local snapshot.
+If there is a conflict between the above three sources, the project-specific Python guide supersedes this [PY-GLOBAL-PYTHON-TENETS] file, which then supersedes the latest available Google Python Style Guide or, when offline, the local snapshot.
 
-### Finding tenets [FINDING-TENETS]
-- When you see a tenet citation like "Tenet X [STABLE-ID]", give precedence to the semantic text of stable ID over the number when trying to find the relevant tenent. Numbering can get messed up.
+### Finding tenets [PY-FINDING-TENETS]
+- When you see a tenet citation like "Tenet X [PY-TENET-ID]", give precedence to the semantic text of stable ID over the number when trying to find the relevant tenet. Numbering can get messed up.
 - When explaining a change, cite the relevant tenet only when it clarifies the reasoning.
-- Always cite a tenet in this form: "Tenet X [STABLE-ID]". You may cite the tenet in codebase as a comment, other markdown files, or even this file itself.
+- Always cite a tenet in this form: "Tenet X [PY-TENET-ID]". You may cite the tenet in codebase as a comment, other markdown files, or even this file itself.
 
-## Maintaining This File [WRITING-THIS-FILE]
-- Give every referable section a unique, short, stable ID of the form [TENET-ID] placed at the end of the title. The ID should give enough context to the reader (LLM or human) on what the tenet is. There should be no punctuation or underscores in the stable ID but dashes are allowed. 
+## Maintaining This File [PY-WRITING-THIS-FILE]
+- Give every referable section a unique, short, stable tenet ID of the form [PY-TENET-ID] placed at the end of the title. The tenet ID should start with `PY-` to reflect that this is a Python tenet. Codebases can be polyglot, and the tenet ID should be unique across all tenets in the `$REPO_ROOT/tenets` folder. The tenet ID should give enough context to the reader (LLM or human) on what the tenet is. There should be no punctuation or underscores in the stable ID but dashes are allowed.
 - The tenet may be referred to from other tenets within this file, some other markdown file, a comment in any of the codebases.
 - Keep each tenet small, concise, concrete, and easy to cite.
 - Add examples to every numbered tenet of the form "Good" and "Bad" typically with brief code snippets. Code snippets do not need to be syntactically valid; you can abbreviate using `...` or comments as needed.
@@ -25,19 +25,39 @@ If there is a conflict between the above three sources, the project-specific Pyt
   1. if the tenet already exists and edit the existing tenet instead of recreating. Never duplicate the same tenet.
   2. the latest available [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html), falling back to the local snapshot at [google-python-style-guide-2026-05-25.html](references/google-python-style-guide-2026-05-25.html) when internet access is unavailable, or other relevant sources to see how the world handles a similar problem. Then educate the human briefly if needed and offer the human to edit/update a tenet.
 - Never add a tenet without a good reason.
-- Do not assume the human is always correct. Never add a tenet simply to placate the human when the human is wrong or "going against the grain".
-- Anti-patterns are discouraged but allowed in this [GLOBAL-PYTHON-TENETS] file in the [EXCEPTIONS] section.
+- Do not assume the human is always correct. Never add a tenet simply to appease the human when the human is wrong or "going against the grain".
+- Anti-patterns are discouraged but allowed in this [PY-GLOBAL-PYTHON-TENETS] file in the [PY-EXCEPTIONS] section.
 
-### Fixing numbering issues [FIX-NUMBERING-ISSUES]
+### Fixing numbering issues [PY-FIX-NUMBERING-ISSUES]
 - If you see that the tenet numbering is wrong (skipped numbers), let the human know and then offer to fix them. The human may delay fixing the numbering in some cases when the human expects a skipped number to be replaced later.
-- When you find a "Tenet X [STABLE-ID]" citation but no Tenet X exists, let the human know, and then offer to fix them.
+- When you find a "Tenet X [PY-TENET-ID]" citation but no Tenet X exists, let the human know, and then offer to fix them.
 
 
-## Tenets [TENETS]
-### Noted Exceptions [EXCEPTIONS]
+## Tenets [PY-TENETS]
+### Noted Exceptions [PY-EXCEPTIONS]
 None recorded yet.
 
-### Tenet 1: Prefer Explicit Data Flow [PY-EXPLICIT-FLOW]
+### Tenet 1: Do not appease the user unless explicitly asked [PY-DO-NOT-APPEASE-USER]
+Assume the user is smart but not always correct. Do not explain routine Python
+choices unless the user demonstrates a misunderstanding. When the user requests
+an anti-pattern or shows confusion about a Python tradeoff, briefly say so,
+give a small example, and avoid changing code merely to appease the user unless
+the user explicitly asks to override this guidance. Record intentional
+anti-pattern overrides in [PY-EXCEPTIONS].
+
+Good:
+```text
+That would make the parser depend on a mutable module global, which conflicts
+with Tenet 2 [PY-EXPLICIT-FLOW]. A small alternative is to pass the parser
+config into `parse_invoice(...)`.
+```
+
+Bad:
+```text
+Sure, I moved the parser config into a module global because you asked.
+```
+
+### Tenet 2: Prefer Explicit Data Flow [PY-EXPLICIT-FLOW]
 Pass dependencies and inputs directly instead of hiding them in globals,
 environment lookups, or module-level mutable state.
 
@@ -53,7 +73,7 @@ def build_report() -> str:
     return GLOBAL_FORMATTER.render(load_rows_from_global_path())
 ```
 
-### Tenet 2: Keep Functions Focused [PY-FOCUSED-FUNCTIONS]
+### Tenet 3: Keep Functions Focused [PY-FOCUSED-FUNCTIONS]
 A function should usually do one job at one level of abstraction. Split work
 when naming the smaller operation makes the code easier to read.
 
@@ -69,7 +89,7 @@ def active_users_and_write_csv(users: Iterable[User], path: Path) -> None:
     ...
 ```
 
-### Tenet 3: Use Types To Explain Boundaries [PY-TYPED-BOUNDARIES]
+### Tenet 4: Use Types To Explain Boundaries [PY-TYPED-BOUNDARIES]
 Add type hints at module and function boundaries. Use domain names, dataclasses,
 TypedDict, Protocol, or simple value objects when primitives become ambiguous.
 
@@ -91,7 +111,7 @@ def fetch_invoice(invoice_id: str, attempts: int, backoff_seconds: float):
     ...
 ```
 
-### Tenet 4: Do Not Mix Business Logic With IO [PY-IO-BOUNDARY]
+### Tenet 5: Do Not Mix Business Logic With IO [PY-IO-BOUNDARY]
 Keep decisions separate from reading files, making network calls, printing,
 logging, database access, or shell execution. IO wrappers should gather inputs
 and persist outputs; pure functions should decide what should happen.
@@ -116,7 +136,7 @@ def load_and_send_reminders(path: Path, today: date) -> None:
             send_reminder(invoice)
 ```
 
-### Tenet 5: Handle Errors At The Right Level [PY-ERROR-LEVEL]
+### Tenet 6: Handle Errors At The Right Level [PY-ERROR-LEVEL]
 Catch exceptions where the code can add context, retry, recover, or choose a
 user-facing response. Do not catch exceptions only to hide them.
 
@@ -136,7 +156,7 @@ except Exception:
     return None
 ```
 
-### Tenet 6: Make Tests Describe Behavior [PY-BEHAVIOR-TESTS]
+### Tenet 7: Make Tests Describe Behavior [PY-BEHAVIOR-TESTS]
 Test observable behavior and meaningful edge cases. Avoid tests that only copy
 the implementation structure.
 

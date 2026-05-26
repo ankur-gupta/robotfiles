@@ -19,7 +19,7 @@ Project-specific instructions in downstream repositories take precedence over th
 - Do not add broad policy or style guidance without a specific reason.
 
 ## Git Commits
-For LLM-authored Git commits in this repository, follow `tenets/git/COMMITS.md`. For Tenet 1 [COMMIT-LLM-STRUCTURE], your `<agent>` name is `claude` which means your commit titles have the prefix `llm/claude:`.
+For LLM-authored Git commits in this repository, follow `tenets/git/COMMITS.md`. For Tenet 1 [GIT-COMMIT-LLM-STRUCTURE], your `<agent>` name is `claude` which means your commit titles have the prefix `llm/claude:`.
 
 ## Python Guidance
 For Python guidance, follow `tenets/languages/PYTHON.md` unless a more specific

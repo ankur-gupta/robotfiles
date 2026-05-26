@@ -17,7 +17,7 @@ Use these files as global defaults. Project-specific instructions take precedenc
 Cite tenets directly in code comments when the reference clarifies a boundary:
 
 ```python
-# Keep parsing separate from filesystem access; see Tenet 4 [PY-IO-BOUNDARY].
+# Keep parsing separate from filesystem access; see Tenet 5 [PY-IO-BOUNDARY].
 def parse_invoice(raw_invoice: str) -> Invoice:
     ...
 ```
