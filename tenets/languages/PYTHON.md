@@ -59,9 +59,10 @@ Sure, I moved the parser config into a module global because you asked.
 
 ### Tenet 2: Maintain Code Locality [PY-MAINTAIN-CODE-LOCALITY]
 Before adding code, check whether it belongs in the current function, module,
-package, or layer. Keep modules focused on their stated responsibility, and put
-shared helpers in the existing module or package that owns that concern instead
-of placing unrelated code near the caller.
+package, or layer. A good rule of thumb is to check whether the surrounding
+code serves the same concern. Keep modules focused on their stated
+responsibility, and put shared helpers in the existing module or package that
+owns that concern instead of placing unrelated code near the caller.
 
 Good:
 ```python
@@ -69,12 +70,13 @@ Good:
 def safe_write(path: Path, data: bytes) -> None:
     ...
 
-
 # serializers/widgets.py
 def write_widget_json(widget: Widget, path: Path) -> None:
+    # do some custom logic here
     storage.files.safe_write(path, widget_to_json(widget))
+    ...
 ```
-Reason: The generic disk I/O helper lives with other storage code, while the
+Reason: The generic disk I/O helper lives with other I/O code, while the
 serializer module only handles widget-to-JSON behavior.
 
 Bad:
@@ -83,9 +85,10 @@ Bad:
 def safe_write(path: Path, data: bytes) -> None:
     ...
 
-
 def write_widget_json(widget: Widget, path: Path) -> None:
+    # do some custom logic here
     safe_write(path, widget_to_json(widget))
+    ...
 ```
 Reason: Both functions are in the same file, so generic disk I/O code is mixed
 into a module whose responsibility is widget JSON serialization.
