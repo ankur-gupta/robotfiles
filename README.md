@@ -22,7 +22,7 @@ Use these files as global defaults. Project-specific instructions take precedenc
 Cite tenets directly in code comments when the reference clarifies a boundary:
 
 ```python
-# Keep business logic separate from filesystem access; see Tenet 3 [PY-BUSINESS-LOGIC-BOUNDARY].
+# Keep business logic separate from filesystem access; see Tenet 4 [PY-BUSINESS-LOGIC-BOUNDARY].
 def parse_invoice(raw_invoice: str) -> Invoice:
     ...
 ```

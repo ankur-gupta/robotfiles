@@ -225,23 +225,7 @@ def build_report(rows: Iterable[Row]) -> Report:
 Reason: The function's behavior depends on hidden process state, so callers and
 tests cannot understand the report rule from the function signature.
 
-### Tenet 6: Keep Functions Focused [PY-FOCUSED-FUNCTIONS]
-A function should usually do one job at one level of abstraction. Split work
-when naming the smaller operation makes the code easier to read.
-
-Good:
-```python
-def active_users(users: Iterable[User]) -> list[User]:
-    return [user for user in users if user.is_active]
-```
-
-Bad:
-```python
-def active_users_and_write_csv(users: Iterable[User], path: Path) -> None:
-    ...
-```
-
-### Tenet 7: Use Types To Explain Boundaries [PY-TYPED-BOUNDARIES]
+### Tenet 6: Use Types To Explain Boundaries [PY-TYPED-BOUNDARIES]
 Add type hints at module and function boundaries. Use domain names, dataclasses,
 TypedDict, Protocol, or simple value objects when primitives become ambiguous.
 
@@ -263,7 +247,7 @@ def fetch_invoice(invoice_id: str, attempts: int, backoff_seconds: float):
     ...
 ```
 
-### Tenet 8: Do Not Swallow Exceptions [PY-DO-NOT-SWALLOW-EXCEPTIONS]
+### Tenet 7: Do Not Swallow Exceptions [PY-DO-NOT-SWALLOW-EXCEPTIONS]
 Catch only the exception types the code knows how to handle. Do not catch
 exceptions only to hide bugs, discard failures, or let the program continue as
 if nothing happened. Let unexpected exceptions propagate.
@@ -308,7 +292,7 @@ except Exception:
 Reason: A broad catch hides unexpected failures and gives the caller no signal
 about what went wrong.
 
-### Tenet 9: Make Tests Describe Behavior [PY-BEHAVIOR-TESTS]
+### Tenet 8: Make Tests Describe Behavior [PY-BEHAVIOR-TESTS]
 Test observable behavior and meaningful edge cases. Avoid tests that only copy
 the implementation structure.
 
@@ -327,7 +311,7 @@ def test_overdue_invoices_uses_less_than_operator() -> None:
     assert "<" in inspect.getsource(overdue_invoices)
 ```
 
-### Tenet 10: Do Not Mix CLI With Package Code [PY-SEPARATE-CLI-FROM-PACKAGE]
+### Tenet 9: Do Not Mix CLI With Package Code [PY-SEPARATE-CLI-FROM-PACKAGE]
 When Python code is a package, keep reusable functionality importable without
 going through a command-line interface. Put argument parsing, terminal IO,
 process exits, and console formatting in a small CLI entrypoint that calls the
