@@ -79,7 +79,7 @@ Then, choose how much inherited guidance to keep:
    references by purpose if paths or names change.
    ```
 
-## Semantic Pull (like `git pull`)
+## Apply Updates: Semantic Pull (like `git pull`)
 
 Use this when you have your own copy of these tenets and want an LLM to pull in
 new upstream guidance from
