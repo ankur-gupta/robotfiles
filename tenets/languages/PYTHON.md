@@ -226,26 +226,47 @@ Reason: The function's behavior depends on hidden process state, so callers and
 tests cannot understand the report rule from the function signature.
 
 ### Tenet 6: Use Types To Explain Boundaries [PY-TYPED-BOUNDARIES]
-Add type hints at module and function boundaries. Use domain names, dataclasses,
-TypedDict, Protocol, or simple value objects when primitives become ambiguous.
+Add type hints at module and function boundaries. When a group of values
+travels together as one domain concept, or when primitives make a boundary
+ambiguous, name the concept with a dataclass, TypedDict, Protocol, type alias,
+or small value object.
+
+Define named types near the package or module that owns the concept. If the
+type is used by multiple files in that package, move it to a predictable shared
+owner such as `models.py`, `schemas.py`, `contracts.py`, or a domain-specific
+module. Avoid placing shared types only where they were first needed, and avoid
+broad junk drawer modules detached from ownership.
 
 Good:
 ```python
+# billing/models.py
 @dataclass(frozen=True)
 class RetryPolicy:
     attempts: int
     backoff_seconds: float
 
 
+# billing/invoices.py
 def fetch_invoice(invoice_id: str, retry: RetryPolicy) -> Invoice:
     ...
 ```
+Reason: The retry settings travel together as one boundary concept, and the
+shared type lives in a predictable owner within the billing package.
 
 Bad:
 ```python
+# billing/invoices.py
 def fetch_invoice(invoice_id: str, attempts: int, backoff_seconds: float):
     ...
+
+
+# billing/reminders.py
+def send_invoice_reminder(invoice_id: str, attempts: int, backoff_seconds: float):
+    ...
 ```
+Reason: The same unnamed retry concept is repeated as loose primitives, so
+callers must infer which values belong together and where the shared contract
+lives.
 
 ### Tenet 7: Do Not Swallow Exceptions [PY-DO-NOT-SWALLOW-EXCEPTIONS]
 Catch only the exception types the code knows how to handle. Do not catch
