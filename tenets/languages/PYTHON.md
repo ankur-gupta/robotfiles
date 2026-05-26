@@ -48,8 +48,8 @@ anti-pattern overrides in [PY-EXCEPTIONS].
 Good:
 ```text
 That would make the parser depend on a mutable module global, which conflicts
-with Tenet 4 [PY-EXPLICIT-FLOW]. A small alternative is to pass the parser
-config into `parse_invoice(...)`.
+with Tenet 4 [PY-PURE-DOMAIN-FUNCTIONS]. A small alternative is to pass the
+parser config into `parse_invoice(...)`.
 ```
 
 Bad:
@@ -136,21 +136,55 @@ Reason: The overdue rule is tangled with file IO, the system clock, logging,
 and sending side effects, so changing or testing the rule requires unrelated
 concerns.
 
-### Tenet 4: Prefer Explicit Data Flow [PY-EXPLICIT-FLOW]
-Pass dependencies and inputs directly instead of hiding them in globals,
-environment lookups, or module-level mutable state.
+### Tenet 4: Keep Domain Functions Pure [PY-PURE-DOMAIN-FUNCTIONS]
+Prefer functions whose results are determined by their arguments. Keep
+environment lookups, clocks, randomness, filesystem access, network calls,
+logging, and other process or external state at the program boundary. Read and
+validate deploy configuration such as environment variables once near startup,
+then pass the resulting values into focused functions.
+
+Some functions are expected to be impure: entrypoints, CLI handlers, web route
+handlers, task runners, adapters, repositories, clients, file readers/writers,
+and logging or metrics setup. Keep that impurity near the edge and pass plain
+values into the functions that express domain rules.
+
+This tenet does not forbid environment variables. Environment variables are
+often the right place for deploy-specific configuration, but repeated
+`os.getenv(...)` calls inside business logic make behavior depend on hidden
+process state and make tests harder to reason about.
 
 Good:
 ```python
-def build_report(rows: list[Row], formatter: Formatter) -> str:
-    return formatter.render(rows)
+@dataclass(frozen=True)
+class ReportConfig:
+    timezone: ZoneInfo
+    include_drafts: bool
+
+
+def build_report(rows: Iterable[Row], config: ReportConfig) -> Report:
+    ...
+
+
+def main() -> None:
+    config = ReportConfig(
+        timezone=ZoneInfo(require_env("REPORT_TIMEZONE")),
+        include_drafts=parse_bool(require_env("REPORT_INCLUDE_DRAFTS")),
+    )
+    rows = load_rows()
+    write_report(build_report(rows, config))
 ```
+Reason: Environment-dependent configuration is read at the edge, while the
+domain function receives explicit inputs and is easy to test.
 
 Bad:
 ```python
-def build_report() -> str:
-    return GLOBAL_FORMATTER.render(load_rows_from_global_path())
+def build_report(rows: Iterable[Row]) -> Report:
+    timezone = ZoneInfo(os.getenv("REPORT_TIMEZONE", "UTC"))
+    include_drafts = os.getenv("REPORT_INCLUDE_DRAFTS") == "1"
+    ...
 ```
+Reason: The function's behavior depends on hidden process state, so callers and
+tests cannot understand the report rule from the function signature.
 
 ### Tenet 5: Keep Functions Focused [PY-FOCUSED-FUNCTIONS]
 A function should usually do one job at one level of abstraction. Split work
