@@ -1,14 +1,19 @@
 # robotfiles
+Global reference files for LLM coding agents
 
-Global reference files for LLM coding agents.
+> _Style guides give an agent rules; robotfiles teaches it to **reason with them** — and **when to break them**_
 
-This repo contains concise, citable tenets for agent behavior in areas where project-local guidance may be absent:
+## Why This Is Different
 
-- `tenets/git/COMMITS.md`: commit-message rules for LLM-authored changes.
-- `tenets/languages/PYTHON.md`: Python coding tenets, with the Google Python Style Guide as the default external baseline.
-- `tenets/languages/references/`: local fallback copies and licenses for external references used by the tenets.
+- **Personal**: tenets reflect your own preferences and override external style guides, which serve as fallback baselines rather than authorities.
+- **Reasoned**: each tenet explains why, so the agent can apply the intent correctly when facing ambiguities
+- **Opinionated**: meta-instructions tell the agent how to behave as a collaborator — when to push back, when to ask, and **when not to appease**.
+- **Update-aware**: meta-instructions tell the agent how to write new tenets and pull upstream changes without overwriting local intent.
+- **Citable**: stable IDs let tenets be referenced from code comments, other documents, and agent steering files, making guidance traceable rather than buried in a prompt.
 
 Use these files as global defaults. Project-specific instructions take precedence; when no project-specific guide exists, apply the relevant tenet file before falling back to general conventions or external style guides.
+
+> _Make the **agent write code like you** so you can **read code faster**_
 
 ## Examples
 
