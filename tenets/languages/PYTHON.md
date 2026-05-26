@@ -48,7 +48,7 @@ anti-pattern overrides in [PY-EXCEPTIONS].
 Good:
 ```text
 That would make the parser depend on a mutable module global, which conflicts
-with Tenet 4 [PY-PURE-DOMAIN-FUNCTIONS]. A small alternative is to pass the
+with Tenet 5 [PY-PURE-DOMAIN-FUNCTIONS]. A small alternative is to pass the
 parser config into `parse_invoice(...)`.
 ```
 
@@ -93,7 +93,46 @@ def write_widget_json(widget: Widget, path: Path) -> None:
 Reason: Both functions are in the same file, so generic disk I/O code is mixed
 into a module whose responsibility is widget JSON serialization.
 
-### Tenet 3: Keep Business Logic Separate [PY-BUSINESS-LOGIC-BOUNDARY]
+### Tenet 3: Do Not Duplicate Code [PY-DO-NOT-DUPLICATE-CODE]
+Avoid copying the same logic into multiple places. Before writing similar code,
+look for an existing function, method, fixture, constant, type, or module that
+already owns the behavior. Reuse or extend that owner when the callers need the
+same rule, and extract a small helper when duplication would make future
+changes easy to miss.
+
+Do not hide different behavior behind a shared abstraction only because two
+snippets look similar. Keep code separate when the concepts or reasons for
+change are different, even if some lines currently match.
+
+Good:
+```python
+def total_price(items: Iterable[LineItem]) -> Money:
+    return sum((item.price for item in items), start=Money.zero())
+
+
+def invoice_total(invoice: Invoice) -> Money:
+    return total_price(invoice.items)
+
+
+def cart_total(cart: Cart) -> Money:
+    return total_price(cart.items)
+```
+Reason: One pricing rule has one owner, so a future rule change is made in one
+place.
+
+Bad:
+```python
+def invoice_total(invoice: Invoice) -> Money:
+    return sum((item.price for item in invoice.items), start=Money.zero())
+
+
+def cart_total(cart: Cart) -> Money:
+    return sum((item.price for item in cart.items), start=Money.zero())
+```
+Reason: The same pricing rule is copied into two functions, so the next pricing
+change can update one caller and silently leave the other behind.
+
+### Tenet 4: Keep Business Logic Separate [PY-BUSINESS-LOGIC-BOUNDARY]
 Keep domain decisions separate from infrastructure and other surrounding
 concerns. Business rules should not be hidden inside file or network IO,
 database access, shell execution, UI or CLI handling, framework request
@@ -136,7 +175,7 @@ Reason: The overdue rule is tangled with file IO, the system clock, logging,
 and sending side effects, so changing or testing the rule requires unrelated
 concerns.
 
-### Tenet 4: Keep Domain Functions Pure [PY-PURE-DOMAIN-FUNCTIONS]
+### Tenet 5: Keep Domain Functions Pure [PY-PURE-DOMAIN-FUNCTIONS]
 Prefer functions whose results are determined by their arguments. Keep
 environment lookups, clocks, randomness, filesystem access, network calls,
 logging, and other process or external state at the program boundary. Read and
@@ -186,7 +225,7 @@ def build_report(rows: Iterable[Row]) -> Report:
 Reason: The function's behavior depends on hidden process state, so callers and
 tests cannot understand the report rule from the function signature.
 
-### Tenet 5: Keep Functions Focused [PY-FOCUSED-FUNCTIONS]
+### Tenet 6: Keep Functions Focused [PY-FOCUSED-FUNCTIONS]
 A function should usually do one job at one level of abstraction. Split work
 when naming the smaller operation makes the code easier to read.
 
@@ -202,7 +241,7 @@ def active_users_and_write_csv(users: Iterable[User], path: Path) -> None:
     ...
 ```
 
-### Tenet 6: Use Types To Explain Boundaries [PY-TYPED-BOUNDARIES]
+### Tenet 7: Use Types To Explain Boundaries [PY-TYPED-BOUNDARIES]
 Add type hints at module and function boundaries. Use domain names, dataclasses,
 TypedDict, Protocol, or simple value objects when primitives become ambiguous.
 
@@ -224,7 +263,7 @@ def fetch_invoice(invoice_id: str, attempts: int, backoff_seconds: float):
     ...
 ```
 
-### Tenet 7: Do Not Swallow Exceptions [PY-DO-NOT-SWALLOW-EXCEPTIONS]
+### Tenet 8: Do Not Swallow Exceptions [PY-DO-NOT-SWALLOW-EXCEPTIONS]
 Catch only the exception types the code knows how to handle. Do not catch
 exceptions only to hide bugs, discard failures, or let the program continue as
 if nothing happened. Let unexpected exceptions propagate.
@@ -269,7 +308,7 @@ except Exception:
 Reason: A broad catch hides unexpected failures and gives the caller no signal
 about what went wrong.
 
-### Tenet 8: Make Tests Describe Behavior [PY-BEHAVIOR-TESTS]
+### Tenet 9: Make Tests Describe Behavior [PY-BEHAVIOR-TESTS]
 Test observable behavior and meaningful edge cases. Avoid tests that only copy
 the implementation structure.
 
