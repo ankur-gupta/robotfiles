@@ -327,6 +327,46 @@ def test_overdue_invoices_uses_less_than_operator() -> None:
     assert "<" in inspect.getsource(overdue_invoices)
 ```
 
+### Tenet 10: Do Not Mix CLI With Package Code [PY-SEPARATE-CLI-FROM-PACKAGE]
+When Python code is a package, keep reusable functionality importable without
+going through a command-line interface. Put argument parsing, terminal IO,
+process exits, and console formatting in a small CLI entrypoint that calls the
+package API. A caller in another codebase should be able to import the package
+and use the same core behavior without shelling out to the CLI.
+
+CLI entrypoints may live in the package when that matches the project layout,
+but they should behave as adapters over importable functions rather than as the
+only place where the behavior exists.
+
+Good:
+```python
+# report_builder/reports.py
+def build_report(rows: Iterable[Row], include_drafts: bool) -> Report:
+    ...
+
+
+# report_builder/cli.py
+def main(argv: Sequence[str] | None = None) -> int:
+    args = parse_args(argv)
+    report = build_report(load_rows(args.input), args.include_drafts)
+    print(render_report(report))
+    return 0
+```
+Reason: The report behavior is available as an importable package API, and the
+CLI only adapts command-line inputs and terminal output.
+
+Bad:
+```python
+# report_builder/cli.py
+def main() -> None:
+    args = parse_args()
+    rows = load_rows(args.input)
+    # all report-building rules live here
+    print(render_report(...))
+```
+Reason: Another Python caller has to invoke the CLI or duplicate its internals
+to use the same report-building behavior.
+
 ## Additional Python References [PY-ADDITIONAL-REFERENCES]
 When the Google Python Style Guide is not enough to resolve a question, use
 these sources as additional reference points:
