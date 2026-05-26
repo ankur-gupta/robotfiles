@@ -18,7 +18,7 @@ If there is a conflict between the above three sources, the project-specific Git
 - Give every referable section a unique, short, stable tenet ID of the form [GIT-TENET-ID] placed at the end of the title. The tenet ID should start with `GIT-` to reflect that this is a Git commit tenet. Codebases can be polyglot, and the tenet ID should be unique across all tenets in the `$REPO_ROOT/tenets` folder. The tenet ID should give enough context to the reader (LLM or human) on what the tenet is. There should be no punctuation or underscores in the stable ID but dashes are allowed.
 - The tenet may be referred to from other tenets within this file, some other markdown file, a comment in any of the codebases, or a commit message.
 - Keep each tenet small, concise, concrete, and easy to cite.
-- Add examples to every numbered tenet of the form "Good" and "Bad" typically with brief commit-message snippets. Snippets do not need to be complete commits; you can abbreviate using `...` or comments as needed.
+- Add examples to every numbered tenet of the form "Good" and "Bad" typically with brief commit-message snippets. Snippets do not need to be complete commits; you can abbreviate using `...` or comments as needed. Add brief reasoning to each example so readers can see why the example satisfies or violates the tenet.
 - Before adding or editing a new tenet, check
   1. if the tenet already exists and edit the existing tenet instead of recreating. Never duplicate the same tenet.
   2. relevant Git commit-message conventions or other relevant sources to see how the world handles a similar problem. Then educate the human briefly if needed and offer the human to edit/update a tenet.

@@ -20,7 +20,7 @@ If there is a conflict between the above three sources, the project-specific Pyt
 - Give every referable section a unique, short, stable tenet ID of the form [PY-TENET-ID] placed at the end of the title. The tenet ID should start with `PY-` to reflect that this is a Python tenet. Codebases can be polyglot, and the tenet ID should be unique across all tenets in the `$REPO_ROOT/tenets` folder. The tenet ID should give enough context to the reader (LLM or human) on what the tenet is. There should be no punctuation or underscores in the stable ID but dashes are allowed.
 - The tenet may be referred to from other tenets within this file, some other markdown file, a comment in any of the codebases.
 - Keep each tenet small, concise, concrete, and easy to cite.
-- Add examples to every numbered tenet of the form "Good" and "Bad" typically with brief code snippets. Code snippets do not need to be syntactically valid; you can abbreviate using `...` or comments as needed.
+- Add examples to every numbered tenet of the form "Good" and "Bad" typically with brief code snippets. Code snippets do not need to be syntactically valid; you can abbreviate using `...` or comments as needed. Add brief reasoning to each example so readers can see why the example satisfies or violates the tenet.
 - Before adding or editing a new tenet, check
   1. if the tenet already exists and edit the existing tenet instead of recreating. Never duplicate the same tenet.
   2. the latest available [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html), falling back to the local snapshot at [google-python-style-guide-2026-05-25.html](references/google-python-style-guide-2026-05-25.html) when internet access is unavailable, or other relevant sources to see how the world handles a similar problem. Then educate the human briefly if needed and offer the human to edit/update a tenet.
@@ -48,7 +48,7 @@ anti-pattern overrides in [PY-EXCEPTIONS].
 Good:
 ```text
 That would make the parser depend on a mutable module global, which conflicts
-with Tenet 2 [PY-EXPLICIT-FLOW]. A small alternative is to pass the parser
+with Tenet 3 [PY-EXPLICIT-FLOW]. A small alternative is to pass the parser
 config into `parse_invoice(...)`.
 ```
 
@@ -57,7 +57,40 @@ Bad:
 Sure, I moved the parser config into a module global because you asked.
 ```
 
-### Tenet 2: Prefer Explicit Data Flow [PY-EXPLICIT-FLOW]
+### Tenet 2: Maintain Code Locality [PY-MAINTAIN-CODE-LOCALITY]
+Before adding code, check whether it belongs in the current function, module,
+package, or layer. Keep modules focused on their stated responsibility, and put
+shared helpers in the existing module or package that owns that concern instead
+of placing unrelated code near the caller.
+
+Good:
+```python
+# storage/files.py
+def safe_write(path: Path, data: bytes) -> None:
+    ...
+
+
+# serializers/widgets.py
+def write_widget_json(widget: Widget, path: Path) -> None:
+    storage.files.safe_write(path, widget_to_json(widget))
+```
+Reason: The generic disk I/O helper lives with other storage code, while the
+serializer module only handles widget-to-JSON behavior.
+
+Bad:
+```python
+# serializers/widgets.py
+def safe_write(path: Path, data: bytes) -> None:
+    ...
+
+
+def write_widget_json(widget: Widget, path: Path) -> None:
+    safe_write(path, widget_to_json(widget))
+```
+Reason: Both functions are in the same file, so generic disk I/O code is mixed
+into a module whose responsibility is widget JSON serialization.
+
+### Tenet 3: Prefer Explicit Data Flow [PY-EXPLICIT-FLOW]
 Pass dependencies and inputs directly instead of hiding them in globals,
 environment lookups, or module-level mutable state.
 
@@ -73,7 +106,7 @@ def build_report() -> str:
     return GLOBAL_FORMATTER.render(load_rows_from_global_path())
 ```
 
-### Tenet 3: Keep Functions Focused [PY-FOCUSED-FUNCTIONS]
+### Tenet 4: Keep Functions Focused [PY-FOCUSED-FUNCTIONS]
 A function should usually do one job at one level of abstraction. Split work
 when naming the smaller operation makes the code easier to read.
 
@@ -89,7 +122,7 @@ def active_users_and_write_csv(users: Iterable[User], path: Path) -> None:
     ...
 ```
 
-### Tenet 4: Use Types To Explain Boundaries [PY-TYPED-BOUNDARIES]
+### Tenet 5: Use Types To Explain Boundaries [PY-TYPED-BOUNDARIES]
 Add type hints at module and function boundaries. Use domain names, dataclasses,
 TypedDict, Protocol, or simple value objects when primitives become ambiguous.
 
@@ -111,7 +144,7 @@ def fetch_invoice(invoice_id: str, attempts: int, backoff_seconds: float):
     ...
 ```
 
-### Tenet 5: Do Not Mix Business Logic With IO [PY-IO-BOUNDARY]
+### Tenet 6: Do Not Mix Business Logic With IO [PY-IO-BOUNDARY]
 Keep decisions separate from reading files, making network calls, printing,
 logging, database access, or shell execution. IO wrappers should gather inputs
 and persist outputs; pure functions should decide what should happen.
@@ -136,7 +169,7 @@ def load_and_send_reminders(path: Path, today: date) -> None:
             send_reminder(invoice)
 ```
 
-### Tenet 6: Handle Errors At The Right Level [PY-ERROR-LEVEL]
+### Tenet 7: Handle Errors At The Right Level [PY-ERROR-LEVEL]
 Catch exceptions where the code can add context, retry, recover, or choose a
 user-facing response. Do not catch exceptions only to hide them.
 
@@ -156,7 +189,7 @@ except Exception:
     return None
 ```
 
-### Tenet 7: Make Tests Describe Behavior [PY-BEHAVIOR-TESTS]
+### Tenet 8: Make Tests Describe Behavior [PY-BEHAVIOR-TESTS]
 Test observable behavior and meaningful edge cases. Avoid tests that only copy
 the implementation structure.
 
@@ -174,3 +207,16 @@ Bad:
 def test_overdue_invoices_uses_less_than_operator() -> None:
     assert "<" in inspect.getsource(overdue_invoices)
 ```
+
+## Additional Python References [PY-ADDITIONAL-REFERENCES]
+When the Google Python Style Guide is not enough to resolve a question, use
+these sources as additional reference points:
+
+- [Python Enhancement Proposals](https://peps.python.org/), especially accepted
+  informational PEPs such as [PEP 8](https://peps.python.org/pep-0008/).
+- [Official Python Tutorial](https://docs.python.org/3/tutorial/), especially
+  the sections on modules, packages, errors, classes, and the standard library.
+- [Official Python Language Reference](https://docs.python.org/3/reference/)
+  when syntax, import behavior, execution model, or data model details matter.
+- [The Hitchhiker's Guide to Python](https://docs.python-guide.org/) for
+  community guidance on project structure and maintainable Python practice.
