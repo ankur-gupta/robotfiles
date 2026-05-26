@@ -48,7 +48,7 @@ anti-pattern overrides in [PY-EXCEPTIONS].
 Good:
 ```text
 That would make the parser depend on a mutable module global, which conflicts
-with Tenet 3 [PY-EXPLICIT-FLOW]. A small alternative is to pass the parser
+with Tenet 4 [PY-EXPLICIT-FLOW]. A small alternative is to pass the parser
 config into `parse_invoice(...)`.
 ```
 
@@ -93,7 +93,50 @@ def write_widget_json(widget: Widget, path: Path) -> None:
 Reason: Both functions are in the same file, so generic disk I/O code is mixed
 into a module whose responsibility is widget JSON serialization.
 
-### Tenet 3: Prefer Explicit Data Flow [PY-EXPLICIT-FLOW]
+### Tenet 3: Keep Business Logic Separate [PY-BUSINESS-LOGIC-BOUNDARY]
+Keep domain decisions separate from infrastructure and other surrounding
+concerns. Business rules should not be hidden inside file or network IO,
+database access, shell execution, UI or CLI handling, framework request
+objects, wire or file serialization, logging, metrics, tracing, environment
+lookups, clocks, randomness, or generic helper utilities. Put those concerns
+at the edges and pass plain inputs into focused domain functions.
+
+This is the boundary that Clean Architecture and Hexagonal Architecture
+protect, but do not add architectural layers merely to name the pattern. When
+implementing a feature, first identify which parts are business rules and which
+parts are generic or infrastructural. Reuse existing generic functionality when
+the owning module already provides it. Implement business rules separately from
+generic helpers and infrastructure, then put each piece in the module or
+package that owns its concern as described by Tenet 2
+[PY-MAINTAIN-CODE-LOCALITY].
+
+Good:
+```python
+def overdue_invoices(invoices: Iterable[Invoice], today: date) -> list[Invoice]:
+    return [invoice for invoice in invoices if invoice.due_date < today]
+
+
+def load_and_send_reminders(path: Path, today: date) -> None:
+    invoices = read_invoices(path)
+    for invoice in overdue_invoices(invoices, today):
+        send_reminder(invoice)
+```
+Reason: The domain rule can be read and tested without file access, network
+calls, logging, or framework objects.
+
+Bad:
+```python
+def load_and_send_reminders(path: Path, logger: Logger) -> None:
+    for invoice in read_invoices(path):
+        if invoice.due_date < date.today():
+            logger.info("Sending reminder for %s", invoice.id)
+            send_reminder(invoice)
+```
+Reason: The overdue rule is tangled with file IO, the system clock, logging,
+and sending side effects, so changing or testing the rule requires unrelated
+concerns.
+
+### Tenet 4: Prefer Explicit Data Flow [PY-EXPLICIT-FLOW]
 Pass dependencies and inputs directly instead of hiding them in globals,
 environment lookups, or module-level mutable state.
 
@@ -109,7 +152,7 @@ def build_report() -> str:
     return GLOBAL_FORMATTER.render(load_rows_from_global_path())
 ```
 
-### Tenet 4: Keep Functions Focused [PY-FOCUSED-FUNCTIONS]
+### Tenet 5: Keep Functions Focused [PY-FOCUSED-FUNCTIONS]
 A function should usually do one job at one level of abstraction. Split work
 when naming the smaller operation makes the code easier to read.
 
@@ -125,7 +168,7 @@ def active_users_and_write_csv(users: Iterable[User], path: Path) -> None:
     ...
 ```
 
-### Tenet 5: Use Types To Explain Boundaries [PY-TYPED-BOUNDARIES]
+### Tenet 6: Use Types To Explain Boundaries [PY-TYPED-BOUNDARIES]
 Add type hints at module and function boundaries. Use domain names, dataclasses,
 TypedDict, Protocol, or simple value objects when primitives become ambiguous.
 
@@ -145,31 +188,6 @@ Bad:
 ```python
 def fetch_invoice(invoice_id: str, attempts: int, backoff_seconds: float):
     ...
-```
-
-### Tenet 6: Do Not Mix Business Logic With IO [PY-IO-BOUNDARY]
-Keep decisions separate from reading files, making network calls, printing,
-logging, database access, or shell execution. IO wrappers should gather inputs
-and persist outputs; pure functions should decide what should happen.
-
-Good:
-```python
-def overdue_invoices(invoices: Iterable[Invoice], today: date) -> list[Invoice]:
-    return [invoice for invoice in invoices if invoice.due_date < today]
-
-
-def load_and_send_reminders(path: Path, today: date) -> None:
-    invoices = read_invoices(path)
-    for invoice in overdue_invoices(invoices, today):
-        send_reminder(invoice)
-```
-
-Bad:
-```python
-def load_and_send_reminders(path: Path, today: date) -> None:
-    for invoice in read_invoices(path):
-        if invoice.due_date < today:
-            send_reminder(invoice)
 ```
 
 ### Tenet 7: Handle Errors At The Right Level [PY-ERROR-LEVEL]
