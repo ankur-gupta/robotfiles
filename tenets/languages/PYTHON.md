@@ -224,9 +224,30 @@ def fetch_invoice(invoice_id: str, attempts: int, backoff_seconds: float):
     ...
 ```
 
-### Tenet 7: Handle Errors At The Right Level [PY-ERROR-LEVEL]
-Catch exceptions where the code can add context, retry, recover, or choose a
-user-facing response. Do not catch exceptions only to hide them.
+### Tenet 7: Do Not Swallow Exceptions [PY-DO-NOT-SWALLOW-EXCEPTIONS]
+Catch only the exception types the code knows how to handle. Do not catch
+exceptions only to hide bugs, discard failures, or let the program continue as
+if nothing happened. Let unexpected exceptions propagate.
+
+Swallowing an exception is acceptable only when the code intentionally handles a
+specific expected failure. The common cases are: returning a documented local
+fallback such as `None` or a default, retrying or using a fallback source,
+choosing a user-facing response at an application boundary, or creating an
+isolation point where the failure is recorded before execution continues. When
+translating an exception instead of swallowing it, raise a meaningful built-in
+or domain exception and preserve the cause with `raise ... from exc` unless
+there is a deliberate reason to suppress it.
+
+Good:
+```python
+def parse_optional_int(text: str) -> int | None:
+    try:
+        return int(text)
+    except ValueError:
+        return None
+```
+Reason: Invalid numeric input is an expected local failure, and the function's
+contract makes the fallback explicit.
 
 Good:
 ```python
@@ -235,6 +256,8 @@ try:
 except InvalidInvoice as exc:
     raise ImportError(f"Invalid invoice in {source_path}") from exc
 ```
+Reason: The lower-level parse failure is translated with context while
+preserving the original cause.
 
 Bad:
 ```python
@@ -243,6 +266,8 @@ try:
 except Exception:
     return None
 ```
+Reason: A broad catch hides unexpected failures and gives the caller no signal
+about what went wrong.
 
 ### Tenet 8: Make Tests Describe Behavior [PY-BEHAVIOR-TESTS]
 Test observable behavior and meaningful edge cases. Avoid tests that only copy
