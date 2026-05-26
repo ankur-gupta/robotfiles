@@ -372,6 +372,71 @@ def main() -> None:
 Reason: Another Python caller has to invoke the CLI or duplicate its internals
 to use the same report-building behavior.
 
+### Tenet 10: Make Local Decorators Earn Their Indirection [PY-LOCAL-DECORATORS-EARN-INDIRECTION]
+Prefer plain functions, explicit calls, and small helpers over project-local
+decorators unless the decorator removes meaningful repetition or expresses a
+stable local convention more clearly than direct code. This follows the Google
+Python Style Guide's guidance to use decorators judiciously when there is a
+clear advantage. A local decorator makes readers understand at least two things
+before they understand the decorated function: what the decorator returns, and
+how that returned callable consumes and replaces the function being defined.
+That indirection must be merited, especially for decorator factories such as
+`@my_decorator(...)`.
+
+This tenet primarily applies to decorators authored in the same project or
+workspace. Established third-party and standard-library decorators are often
+part of the API contract and are acceptable when they match the library's
+intended use, such as `@dataclass`, `@property`, `@pytest.mark.parametrize`,
+`@app.route`, `@lru_cache`, or framework registration decorators. Local
+decorators are also acceptable when they provide a clear cross-cutting behavior
+with focused tests, preserve wrapper metadata with `functools.wraps` when they
+wrap callables, and avoid surprising import-time side effects. When a local
+decorator does not take configuration arguments, prefer `@my_decorator` over
+`@my_decorator()` so readers do not have to parse an unnecessary
+decorator-factory call.
+
+Good:
+```python
+def load_invoice(invoice_id: str, cache: InvoiceCache) -> Invoice:
+    cached = cache.get(invoice_id)
+    if cached is not None:
+        return cached
+    invoice = fetch_invoice(invoice_id)
+    cache.put(invoice_id, invoice)
+    return invoice
+```
+Reason: The cache behavior is explicit at the call site and can be understood
+without first reading a local decorator factory and wrapper.
+
+Good:
+```python
+@pytest.mark.parametrize("raw, expected", [("1", 1), ("", None)])
+def test_parse_optional_int(raw: str, expected: int | None) -> None:
+    assert parse_optional_int(raw) == expected
+```
+Reason: The decorator is an established third-party test API whose behavior is
+more recognizable than hand-written loop machinery in each test.
+
+Bad:
+```python
+@cached_with(project_cache())
+def load_invoice(invoice_id: str) -> Invoice:
+    return fetch_invoice(invoice_id)
+```
+Reason: A project-local decorator factory hides the cache lookup, cache write,
+wrapper behavior, and import-time decorator construction behind syntax that
+looks lighter than the behavior it adds.
+
+Bad:
+```python
+@trace_calls()
+def parse_invoice(raw: str) -> Invoice:
+    ...
+```
+Reason: If `trace_calls` needs no configuration, the empty call adds a
+decorator-factory layer that readers must understand before reading the
+function.
+
 ## Additional Python References [PY-ADDITIONAL-REFERENCES]
 When the Google Python Style Guide is not enough to resolve a question, use
 these sources as additional reference points:
